@@ -2,6 +2,16 @@
 
 A meta modeling facility for textual model representation with Clojure.
 
+## Usage
+
+Include in your project.clj the following dependency
+
+    [metam/core "1.0.1"]
+
+
+See the wsdl [metamodel](samples/src/samples/wsdl/metamodel.clj)
+and [model](samples/src/samples/wsdl/model.clj) namespaces.
+
 ## Motivation by examples
 
 If you want to describe the structure of UI forms, entities,
