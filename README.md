@@ -12,7 +12,7 @@ Include in your project.clj the following dependency
 
 There are only a few API functions:
 
- * **defmetamodel** -- Macro to define a new metamodel consisting of a hierarchy, a map `{type-keyword -> {attr-keyword -> predicate-vector}}` and a defaults function var. The defaults function is usually a multimethod that takes three arguments: the model element, the type-keyword and the attr-keyword. It is invoked for each attribute whose value is nil.
+ * **defmetamodel** -- Macro to define a new metamodel consisting of a hierarchy, a map `{type-keyword -> {attr-keyword -> predicate-vector}}` and a defaults function var. The defaults function is usually a multimethod that takes three arguments: the model element, the type-keyword and the attr-keyword. It is invoked for each attribute whose value is nil, and is expected to return a corresponding default value.
  * **pr-model** -- To get a human readable representation of an instantiated model m use `(pr-model m)` in the REPL.
  * **metatype** -- Returns the type-keyword of a model element.
 
@@ -136,7 +136,9 @@ above would look like this:
 (defn many [name type]
   (e name :type type :mult :many))
 ```
-  
+
+## What the macro does
+
 The **defmetamodel** creates a factory function for every meta type
 (like ::complextype, ::e or ::service). The functions specified in the
 vectors following the attribute keywords are predicates that are used
@@ -173,7 +175,68 @@ For an invocation of defmetamodel macroexpand-1 outputs:
     (def service (wsdl/instance-factory wsdl :wsdl/service))
     (def op (wsdl/instance-factory wsdl :wsdl/op)))
 ```
-## License
+
+## How to add default values
+
+The following snippet shows another example of a metamodel that also
+supports default values:
+
+```clojure
+(ns visuals.forml
+  (:use [metam.core]))
+
+(declare default-value)
+
+(defmetamodel forml
+  (-> (make-hierarchy)
+      (derive ::panel ::component)
+      (derive ::panel ::growing)
+      (derive ::widget ::component)
+      (derive ::textfield ::labeled)
+      (derive ::textfield ::widget)
+      (derive ::label ::widget)
+      (derive ::button ::widget))
+  {::panel       {:lygeneral [string?]
+                  :lycolumns [string?]
+                  :lyrows [string?]
+                  :lyhint [string?]
+                  :components [(type-of? ::component)]}
+   ::label       {:text [string?]
+                  :lyhint [string?]}
+   ::textfield   {:label [string?]
+                  :lyhint [string?]
+                  :labelyhint [string?]}
+   ::button      {:text [string?]
+                  :lyhint [string?]}}
+  #'default-value)
+
+
+(defmulti default-value
+  (fn [spec type-keyword attr-keyword]
+    [type-keyword attr-keyword])
+  :hierarchy #'forml-hierarchy)
+
+(defmacro ^:private defdefault
+  [dispatch-value & forms]
+  (let [args ['spec 'tk 'ak]]
+    `(defmethod default-value ~dispatch-value
+     ~args
+     ~@forms)))
+
+(defdefault :default                     nil)
+(defdefault [::widget :lyhint]           "")
+(defdefault [::growing :lyhint]          "grow")
+(defdefault [::panel :lyrows]            "")
+(defdefault [::panel :lycolumns]         "")
+(defdefault [::labeled :labelyhint]      "")
+(defdefault [::textfield :label]         (:name spec))
+(defdefault [::button :text]             (:name spec))
+```
+
+The default-value function is a multimethod that takes three arguments: the model element, the type-keyword and the attr-keyword. It returns the default value. It is invoked for each attribute whose value is nil. The defdefault macro is used here only to make the actual mapping between the dispatch-value and the expression yielding the default value more concise.
+
+
+# License
 
 Copyright 2013 F.Riemenschneider
 
