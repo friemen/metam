@@ -152,22 +152,18 @@
 
 
 (defn pr-model
-  "Creates a string that represents the model-element me."
   [me]
   (cond
-   (map? me) (str
-             (if-let [mt (metatype me)]
-               (name mt))
-             (if-let [id (-> me :name)]
-               (str " " id))
-             " {"
-             (str/join ", " (for [[k v] me :when (not (#{::meta :name} k))] (str k " " (pr-model v))))
-             "}")
-   (coll? me) (str
-              "["
-              (str/join ", " (map pr-model me))
-              "]")
-   :else (str me)))
+   (map? me) (let [m (into {}
+                           (for [[k v] me :when (not (#{::meta :name} k))]
+                             [k (pr-model v)]))]
+               (if-let [mt (metatype me)]
+                 (list (symbol (name mt)) (-> me :name) m)
+                 m))
+   (coll? me) (vec (map pr-model me))
+   :else me))
+
+
 
 (def no-defaults nil)
 

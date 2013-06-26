@@ -64,32 +64,9 @@
   (let [p (panel "p1" :elements
                  [(button "b1" :text "B")
                   (textfield "t1" :label "T")])]
-    (is (= "panel p1 {:elements [button b1 {:text B}, textfield t1 {:label T, :password true}]}"
+    (is (= '(panel
+            "p1"
+            {:elements
+             [(button "b1" {:text "B"})
+              (textfield "t1" {:label "T", :password true})]})
            (pr-model p)))))
-
-
-    (do (def wsdl-hierarchy
-          (-> (make-hierarchy)
-              (derive :metam.core/complextype :metam.core/datatype)
-              (derive :metam.core/simpletype :metam.core/datatype)))
-        (def wsdl
-          {:hierarchy wsdl-hierarchy,
-           :types
-           {:metam.core/complextype
-            {:elements [(type-of? :metam.core/e)]},
-            :metam.core/simpletype
-            {},
-            :metam.core/e
-            {:type [required (type-of? :metam.core/datatype)],
-             :mult [(value-of? :one :many)]},
-            :metam.core/service
-            {:operations [(type-of? :metam.core/op)]},
-            :metam.core/op
-            {:in-elements [(type-of? :metam.core/e)],
-             :out-elements [(type-of? :metam.core/e)]}},
-           :default-fn-var #'no-defaults})
-        (def complextype (metam.core/instance-factory wsdl :metam.core/complextype))
-        (def simpletype (metam.core/instance-factory wsdl :metam.core/simpletype))
-        (def e (metam.core/instance-factory wsdl :metam.core/e))
-        (def service (metam.core/instance-factory wsdl :metam.core/service))
-        (def op (metam.core/instance-factory wsdl :metam.core/op)))

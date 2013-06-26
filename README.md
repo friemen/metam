@@ -8,11 +8,15 @@ A meta modeling facility for textual model representation with Clojure.
 
 Include in your project.clj the following dependency
 
-    [metam/core "1.0.1"]
+    [metam/core "1.0.2"]
 
 
 See the wsdl [metamodel](samples/src/samples/wsdl/metamodel.clj)
 and [model](samples/src/samples/wsdl/model.clj) namespaces.
+
+To get a human readable representation of an instantiated model m
+use `(pr-model m)` in the REPL.
+
 
 ## Motivation by examples
 
@@ -167,3 +171,8 @@ For an invocation of defmetamodel macroexpand-1 outputs:
     (def service (wsdl/instance-factory wsdl :wsdl/service))
     (def op (wsdl/instance-factory wsdl :wsdl/op)))
 ```
+## License
+
+Copyright 2013 F.Riemenschneider
+
+Distributed under the Eclipse Public License, the same as Clojure.
