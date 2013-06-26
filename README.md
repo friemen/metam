@@ -10,12 +10,14 @@ Include in your project.clj the following dependency
 
     [metam/core "1.0.2"]
 
+There are only a few API functions:
 
-See the wsdl [metamodel](samples/src/samples/wsdl/metamodel.clj)
+ * **defmetamodel** -- Macro to define a new metamodel consisting of a hierarchy, a map `{type-keyword -> {attr-keyword -> predicate-vector}}` and a defaults function var. The defaults function is usually a multimethod that takes three arguments: the model element, the type-keyword and the attr-keyword. It is invoked for each attribute whose value is nil.
+ * **pr-model** -- To get a human readable representation of an instantiated model m use `(pr-model m)` in the REPL.
+ * **metatype** -- Returns the type-keyword of a model element.
+
+For an example see the wsdl [metamodel](samples/src/samples/wsdl/metamodel.clj)
 and [model](samples/src/samples/wsdl/model.clj) namespaces.
-
-To get a human readable representation of an instantiated model m
-use `(pr-model m)` in the REPL.
 
 
 ## Motivation by examples
