@@ -64,9 +64,7 @@
   (let [p (panel "p1" :elements
                  [(button "b1" :text "B")
                   (textfield "t1" :label "T")])]
-    (is (= '(panel
-            "p1"
-            {:elements
-             [(button "b1" {:text "B"})
-              (textfield "t1" {:label "T", :password true})]})
+    (is (= '(panel "p1"
+                   :elements [(button "b1" :text "B")
+                              (textfield "t1" :label "T", :password true)])
            (pr-model p)))))

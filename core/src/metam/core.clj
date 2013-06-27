@@ -152,14 +152,15 @@
 
 
 (defn pr-model
+  "Returns a readable representation of the model element as Clojure data."
   [me]
   (cond
-   (map? me) (let [m (into {}
+   (map? me) (let [s (apply concat
                            (for [[k v] me :when (not (#{::meta :name} k))]
                              [k (pr-model v)]))]
                (if-let [mt (metatype me)]
-                 (list (symbol (name mt)) (-> me :name) m)
-                 m))
+                 (conj s (-> me :name) (symbol (name mt)))
+                 s))
    (coll? me) (vec (map pr-model me))
    :else me))
 

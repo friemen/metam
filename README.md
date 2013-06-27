@@ -8,12 +8,18 @@ A meta modeling facility for textual model representation with Clojure.
 
 Include in your project.clj the following dependency
 
-    [metam/core "1.0.2"]
+    [metam/core "1.0.3"]
 
 There are only a few API functions:
 
- * **defmetamodel** -- Macro to define a new metamodel consisting of a hierarchy, a map `{type-keyword -> {attr-keyword -> predicate-vector}}` and a defaults function var. The defaults function is usually a multimethod that takes three arguments: the model element, the type-keyword and the attr-keyword. It is invoked for each attribute whose value is nil, and is expected to return a corresponding default value.
- * **pr-model** -- To get a human readable representation of an instantiated model m use `(pr-model m)` in the REPL.
+ * **defmetamodel** -- Macro to define a new metamodel consisting of a hierarchy,
+ a map `{type-keyword -> {attr-keyword -> predicate-vector}}` and a defaults
+ function var. The defaults function is usually a multimethod that takes
+ three arguments: the model element, the type-keyword and the attr-keyword.
+ It is invoked for each attribute whose value is nil, and is expected to return
+ a corresponding default value.
+ * **pr-model** -- To get a (human) readable representation of an instantiated
+ model m use `(pr-model m)` in the REPL.
  * **metatype** -- Returns the type-keyword of a model element.
 
 For an example see the wsdl [metamodel](samples/src/samples/wsdl/metamodel.clj)
@@ -146,7 +152,7 @@ for validation.
 Each factory function validates input and provides default values (if
 a corresponding function var was given).
 
-For an invocation of defmetamodel macroexpand-1 outputs:
+An invocation of macroexpand-1 on a defmetamodel expression outputs:
 
 ```clojure
 (do (def wsdl-hierarchy
@@ -233,7 +239,11 @@ supports default values:
 (defdefault [::button :text]             (:name spec))
 ```
 
-The default-value function is a multimethod that takes three arguments: the model element, the type-keyword and the attr-keyword. It returns the default value. It is invoked for each attribute whose value is nil. The defdefault macro is used here only to make the actual mapping between the dispatch-value and the expression yielding the default value more concise.
+The default-value function is a multimethod that takes three arguments:
+the model element, the type-keyword and the attr-keyword. It returns the
+default value. It is invoked for each attribute whose value is nil.
+The defdefault macro is used here only to make the actual mapping between
+the dispatch-value and the expression yielding the default value more concise.
 
 
 # License
