@@ -1,6 +1,6 @@
 (ns metam.core-test
-  (:use [clojure.test]
-        [metam.core]))
+  (:require [clojure.test :refer :all]
+            [metam.core :refer :all]))
 
 
 (declare defaults)
@@ -10,10 +10,10 @@
       (derive ::textfield ::widget)
       (derive ::button ::widget))
   {::textfield    {:label [string?]
-                   :password [(value-of? true false)]}
+                   :password [(value-of true false)]}
    ::button       {:text [string?]}
    ::panel        {:elements [required
-                              (type-of? ::widget)
+                              (coll (type-of ::widget))
                               #(> (count %) 0)]}}
   #'defaults)
 
@@ -68,3 +68,10 @@
                    :elements [(button "b1" :text "B")
                               (textfield "t1" :label "T", :password true)])
            (pr-model p)))))
+
+
+(deftest predicates-test
+  (is ((coll string?) ["1" "2"]))
+  (is (not ((coll string?) [1 2])))
+  (is ((type-of ::widget) (button "b1" :text "B")))
+  (is (not ((type-of ::widget) (panel "p" :elements [(button "b1" :text "B")])))))

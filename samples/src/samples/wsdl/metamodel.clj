@@ -1,5 +1,5 @@
 (ns samples.wsdl.metamodel
-  (:use [metam.core]))
+  (:require [metam.core :refer :all]))
 
 
 ;; Define metamodel
@@ -11,17 +11,17 @@
       (derive ::simpletype ::datatype))
   
   {; a data structure
-   ::complextype  {:elements [(type-of? ::e)]}
+   ::complextype  {:elements [(coll (type-of ::e))]}
    ; a primitive type (like string, number, date)
    ::simpletype   {}
    ; an element of a complextype
-   ::e            {:type [required (type-of? ::datatype)]
-                   :mult [(value-of? :one :many)]}   
+   ::e            {:type [required (type-of ::datatype)]
+                   :mult [(value-of :one :many)]}   
    ; a web service                         
-   ::service      {:operations [(type-of? ::op)]}
+   ::service      {:operations [(coll (type-of ::op))]}
    ; a service operation
-   ::op           {:in-elements [(type-of? ::e)]
-                   :out-elements [(type-of? ::e)]}
+   ::op           {:in-elements [(coll (type-of ::e))]
+                   :out-elements [(coll (type-of ::e))]}
    }
   #'no-defaults)
 

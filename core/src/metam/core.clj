@@ -33,6 +33,15 @@
 (def required not-nil?)
 
 
+(defn- deep-remove-meta
+  [x]
+  (cond
+   (map? x) (into {}
+                  (for [[k v] x :when (not= k ::meta)] [k (deep-remove-meta v)]))
+   (coll? x) (into (empty x) (map deep-remove-meta x))
+   :default x))
+
+
 (defn- check-value
   "Returns the vector [k v] if k is contained in (keys attrmap) and
    all constraint function invocations return true. Otherwise
@@ -42,7 +51,9 @@
     (if (reduce #(and %1 (%2 v)) true preds)
       [k v]
       (throw (IllegalArgumentException.
-              (str "Value '" v "' violates constraints for attribute " k "."))))
+              (str "Value '" (deep-remove-meta v)
+                   "' violates constraints for attribute " k
+                   ", predicates were " preds))))
     (throw (IllegalArgumentException.
             (str "Attribute " k " is unknown. Valid attribute keys are " (str/join ", " (keys attrmap)))))))
 
@@ -110,13 +121,9 @@
 (defn metatype?
   "Returns true if me is of the meta-type specified by type-keyword."
   [type-keyword me]
-  (let [type-check? (fn [me]
-                      (let [h (hierarchy me)
-                            mt (metatype me)]
-                        (and h mt (isa? h mt type-keyword))))]
-   (if (vector? me)
-    (every? type-check? me)
-    (type-check? me))))
+  (let [h (hierarchy me)
+        mt (metatype me)]
+    (and h mt (isa? h mt type-keyword))))
 
 
 (defn instance-factory
@@ -136,20 +143,31 @@
            (with-defaults (:default-fn-var meta-model))))))
 
 
-(defn type-of?
-  "Returns a function that checks if x is of the metatype specified by typekey."
+;; Predicate factories for use in meta model definition
+
+(defn type-of
+  "Returns a predicate that checks if x is of the metatype specified by typekey."
   [type-keyword]
   (partial metatype? type-keyword))
 
 
-(defn value-of?
-  "Returns a function that checks if a given key is contained in the set
-   passed in the value-of? call."
-  [ & keys]
-  (let [keyset (set keys)]
+(defn value-of
+  "Returns a predicate that checks if a given value is contained in the set of keys."
+  [ & values]
+  (let [vset (set values)]
     (fn [x]
-      (contains? keyset x))))
+      (contains? vset x))))
 
+(defn coll
+  "Returns a predicate that checks if all x in xs comply to the predicate."
+  [pred]
+  (fn [xs]
+    (if (coll? xs)
+      (every? pred xs)
+      false)))
+
+
+;; Main API
 
 (defn pr-model
   "Returns a readable representation of the model element as Clojure data."

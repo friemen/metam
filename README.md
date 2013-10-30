@@ -8,7 +8,7 @@ A meta modeling facility for textual model representation with Clojure.
 
 Include in your project.clj the following dependency
 
-    [metam/core "1.0.3"]
+    [metam/core "1.0.4"]
 
 There are only a few API functions:
 
@@ -115,21 +115,21 @@ above would look like this:
       (derive ::simpletype ::datatype))
   
   {; a data structure
-   ::complextype  {:elements [(type-of? ::e)]}
+   ::complextype  {:elements [(coll (type-of ::e))]}
    
    ; a primitive type (like string, number, date)
    ::simpletype   {}
    
    ; an element of a complextype
-   ::e            {:type [required (type-of? ::datatype)]
-                   :mult [(value-of? :one :many)]}
+   ::e            {:type [required (type-of ::datatype)]
+                   :mult [(value-of :one :many)]}
 
    ; a web service                         
-   ::service      {:operations [(type-of? ::op)]}
+   ::service      {:operations [(coll (type-of ::op))]}
    
    ; a service operation
-   ::op           {:in-elements [(type-of? ::e)]
-                   :out-elements [(type-of? ::e)]}
+   ::op           {:in-elements [(coll (type-of ::e))]
+                   :out-elements [(coll (type-of ::e))]}
    }
   #'no-defaults)
 
@@ -163,17 +163,17 @@ An invocation of macroexpand-1 on a defmetamodel expression outputs:
       {:hierarchy wsdl-hierarchy,
        :types
        {:wsdl/complextype
-        {:elements [(type-of? :wsdl/e)]},
+        {:elements [(coll (type-of :wsdl/e))]},
         :wsdl/simpletype
         {},
         :wsdl/e
-        {:type [required (type-of? :wsdl/datatype)],
-         :mult [(value-of? :one :many)]},
+        {:type [required (type-of :wsdl/datatype)],
+         :mult [(value-of :one :many)]},
         :wsdl/service
-        {:operations [(type-of? :wsdl/op)]},
+        {:operations [(coll (type-of :wsdl/op))]},
         :wsdl/op
-        {:in-elements [(type-of? :wsdl/e)],
-         :out-elements [(type-of? :wsdl/e)]}},
+        {:in-elements [(coll (type-of :wsdl/e))],
+         :out-elements [(coll (type-of :wsdl/e))]}},
        :default-fn-var #'no-defaults})
     (def complextype (wsdl/instance-factory wsdl :wsdl/complextype))
     (def simpletype (wsdl/instance-factory wsdl :wsdl/simpletype))
@@ -206,7 +206,7 @@ supports default values:
                   :lycolumns [string?]
                   :lyrows [string?]
                   :lyhint [string?]
-                  :components [(type-of? ::component)]}
+                  :components [(coll (type-of ::component))]}
    ::label       {:text [string?]
                   :lyhint [string?]}
    ::textfield   {:label [string?]
