@@ -7,5 +7,5 @@
   :repl-options  {:port 9090}
   :scm {:name "git"
         :url "https://github.com/friemen/metam/core"}
-  :repositories [["clojars" {:url "https://clojars.com/repo"
+  :repositories [["clojars" {:url "https://clojars.org/repo"
                              :creds :gpg}]])
