@@ -70,3 +70,11 @@
   (is (not ((coll string?) [1 2])))
   (is ((type-of ::widget) (button "b1" :text "B")))
   (is (not ((type-of ::widget) (panel "p" :elements [(button "b1" :text "B")])))))
+
+
+(deftest boolean?-test
+  (are [r x] (= r (boolean? x))
+       false nil
+       true false
+       true true
+       false "foo"))

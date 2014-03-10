@@ -1,6 +1,6 @@
 (ns metam.core
   (:require [clojure.string :as str])
-  (:use [clojure.set :only [superset?]]))
+  (:require [clojure.set :refer [superset?]]))
 
 ;; Concepts
 ;;
@@ -165,6 +165,11 @@
     (if (coll? xs)
       (every? pred xs)
       false)))
+
+(defn boolean?
+  "Predicate to check if a value is either true or false."
+  [x]
+  (or (= x true) (= x false)))
 
 
 ;; Main API
