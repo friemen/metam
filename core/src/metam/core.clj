@@ -200,3 +200,18 @@
          (def ^:metamodel ~sym ~mm)
          ~@(for [[typekey attrmap] typemap]
              `(def ~(symbol (name typekey)) (instance-factory ~sym ~typekey))))))
+
+
+
+(defmacro defdefaults
+  "Creates a multimethod for the metamodel that provides defaults from the given map."
+  [sym metamodel default-mappings]
+  `(do (defmulti ~sym
+         (fn ~['spec 'type-keyword 'attr-keyword]
+           (vector ~'type-keyword ~'attr-keyword))
+         :hierarchy (var ~(symbol (str metamodel "-hierarchy"))))
+       ~@(map (fn [[k forms]] `(defmethod ~sym ~k ~['spec 'tk 'ak]
+                                 ~forms))
+              default-mappings)))
+
+

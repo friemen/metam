@@ -18,6 +18,7 @@ There are only a few API functions:
  three arguments: the model element, the type-keyword and the attr-keyword.
  It is invoked for each attribute whose value is nil, and is expected to return
  a corresponding default value.
+ * **defdefaults** -- Macro to create a multimethod from a map of default values.
  * **pr-model** -- To get a (human) readable representation of an instantiated
  model m use `(pr-model m)` in the REPL.
  * **metatype** -- Returns the type-keyword of a model element.
@@ -189,7 +190,7 @@ supports default values:
 
 ```clojure
 (ns visuals.forml
-  (:use [metam.core]))
+  (:require [metam.core :refer :all]))
 
 (declare default-value)
 
@@ -216,38 +217,26 @@ supports default values:
                   :lyhint [string?]}}
   #'default-value)
 
-
-(defmulti default-value
-  (fn [spec type-keyword attr-keyword]
-    [type-keyword attr-keyword])
-  :hierarchy #'forml-hierarchy)
-
-(defmacro ^:private defdefault
-  [dispatch-value & forms]
-  (let [args ['spec 'tk 'ak]]
-    `(defmethod default-value ~dispatch-value
-     ~args
-     ~@forms)))
-
-(defdefault :default                     nil)
-(defdefault [::widget :lyhint]           "")
-(defdefault [::growing :lyhint]          "grow")
-(defdefault [::panel :lyrows]            "")
-(defdefault [::panel :lycolumns]         "")
-(defdefault [::labeled :labelyhint]      "")
-(defdefault [::textfield :label]         (:name spec))
-(defdefault [::button :text]             (:name spec))
+(defdefaults default-value forml
+  {:default                     nil
+   [::widget :lyhint]           ""
+   [::growing :lyhint]          "grow"
+   [::panel :lyrows]            ""
+   [::panel :lycolumns]         ""
+   [::labeled :labelyhint]      ""
+   [::textfield :label]         (:name spec)
+   [::button :text]             (:name spec)})
 ```
 
 The default-value function is a multimethod that takes three arguments:
 the model element, the type-keyword and the attr-keyword. It returns the
 default value. It is invoked for each attribute whose value is nil.
-The defdefault macro is used here only to make the actual mapping between
+The **defdefaults** macro is used here to make the actual mapping between
 the dispatch-value and the expression yielding the default value more concise.
 
 
 # License
 
-Copyright 2013 F.Riemenschneider
+Copyright 2013,2014 F.Riemenschneider
 
 Distributed under the Eclipse Public License, the same as Clojure.

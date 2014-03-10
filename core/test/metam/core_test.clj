@@ -17,14 +17,9 @@
                               #(> (count %) 0)]}}
   #'defaults)
 
-
-(defmulti defaults
-  (fn [me type-keyword attr-keyword] [type-keyword attr-keyword])
-  :hierarchy #'forms-hierarchy)
-
-(defmethod defaults :default [me tk ak] nil)
-(defmethod defaults [::textfield :password] [me tk ak] true)
-
+(defdefaults defaults forms
+  {:default nil
+   [::textfield :password] true})
 
 
 (deftest valid-panel-test
