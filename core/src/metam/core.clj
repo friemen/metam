@@ -178,13 +178,21 @@
   "Returns a readable representation of the model element as Clojure data."
   [me]
   (cond
-   (map? me) (let [s (apply concat
-                           (for [[k v] me :when (not (#{::meta :name} k))]
-                             [k (pr-model v)]))]
-               (if-let [mt (metatype me)]
-                 (conj s (-> me :name) (symbol (name mt)))
-                 s))
-   (coll? me) (vec (map pr-model me))
+   (and (map? me) (::meta me))
+   (let [s (apply concat
+                  (for [[k v] me :when (not (#{::meta :name} k))]
+                    [k (pr-model v)]))]
+     (if-let [mt (metatype me)]
+       (conj s (-> me :name) (symbol (name mt)))
+       s))
+   
+   (map? me)
+   (into {} (for [[k v] me]
+              [k (pr-model v)]))
+   
+   (coll? me)
+   (vec (map pr-model me))
+   
    :else me))
 
 
