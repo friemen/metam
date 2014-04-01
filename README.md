@@ -8,7 +8,7 @@ A meta modeling facility for textual model representation with Clojure.
 
 Include in your project.clj the following dependency
 
-    [metam/core "1.0.4"]
+    [metam/core "1.0.6"]
 
 There are only a few API functions:
 
