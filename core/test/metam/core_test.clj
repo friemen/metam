@@ -69,7 +69,9 @@
   (is ((coll string?) ["1" "2"]))
   (is (not ((coll string?) [1 2])))
   (is ((type-of ::widget) (button "b1" :text "B")))
-  (is (not ((type-of ::widget) (panel "p" :elements [(button "b1" :text "B")])))))
+  (is (not ((type-of ::widget) (panel "p" :elements [(button "b1" :text "B")]))))
+  (is ((coll keyword? fn?) {:id identity :map map}))
+  (is (not ((coll string? number?) {"foo" 42 "bar" "4711"}))))
 
 
 (deftest boolean?-test

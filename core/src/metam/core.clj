@@ -44,8 +44,8 @@
 
 (defn- check-value
   "Returns the vector [k v] if k is contained in (keys attrmap) and
-   all constraint function invocations return true. Otherwise
-   an IllegalArgumentException is thrown."
+  all constraint function invocations return true. Otherwise
+  an IllegalArgumentException is thrown."
   [attrmap [k v]]
   (if-let [preds (get attrmap k)]
     (if (reduce #(and %1 (%2 v)) true preds)
@@ -89,10 +89,10 @@
 
 (defn- with-defaults
   "Adds default values using the function default-fn to the model element x.
-   A default-fn function must take three arguments:
-   - the model element under construction as map
-   - the typekey that denotes the metatype
-   - the attribute key"
+  A default-fn function must take three arguments:
+  - the model element under construction as map
+  - the typekey that denotes the metatype
+  - the attribute key"
   [default-fn-var me]
   (if-let [default-fn (get-default-fn default-fn-var)]
     (let [typekey (->> me ::meta :type)
@@ -128,7 +128,7 @@
 
 (defn instance-factory
   "Returns a factory function that is used to create model elements of the
-   type described by typekey and attrmap."
+  type described by typekey and attrmap."
   [meta-model type-keyword]
   (fn [id & keys-and-values]
     (let [kv-pairs (partition 2 keys-and-values)
@@ -159,12 +159,20 @@
       (contains? vset x))))
 
 (defn coll
-  "Returns a predicate that checks if all x in xs comply to the predicate."
-  [pred]
-  (fn [xs]
-    (if (coll? xs)
-      (every? pred xs)
-      false)))
+  "The single arity version returns a predicate that checks 
+  if all x in xs comply to the predicate.
+  The 2-arity version returns a predicate that checks if all 
+  keys and all values comply to key-pred and val-pred, respectively."
+  ([pred]
+     (fn [xs]
+       (if (coll? xs)
+         (every? pred xs)
+         false)))
+  ([key-pred val-pred]
+     (fn [m]
+       (and (map? m)
+            (every? key-pred (keys m))
+            (every? val-pred (vals m))))))
 
 (defn boolean?
   "Predicate to check if a value is either true or false."
@@ -201,9 +209,9 @@
 
 (defmacro defmetamodel
   "Defines several vars in the current namespace:
-    - The sym-hierarchy var contains the type hierarchy.
-    - The sym-metamodel var contains a map with keys/values :hierarchy and :types.
-    - For each type a factory function that creates and checks a model element for that type."
+   - The sym-hierarchy var contains the type hierarchy.
+   - The sym-metamodel var contains a map with keys/values :hierarchy and :types.
+   - For each type a factory function that creates and checks a model element for that type."
   [sym hierarchy typemap default-fn-var]
   (let [hier-sym (symbol (str sym "-hierarchy"))
         mm {:hierarchy hier-sym
