@@ -80,3 +80,8 @@
        true false
        true true
        false "foo"))
+
+
+(deftest docstring-test
+  (let [docstring (-> (var textfield) meta :doc)]
+    (is "Creates a textfield.\n  Valid keys are label, password.")))

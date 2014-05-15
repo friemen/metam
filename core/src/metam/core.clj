@@ -142,6 +142,13 @@
                   :name id})
            (with-defaults (:default-fn-var meta-model))))))
 
+(defn docstring
+  "Returns the docstring for a model element factory function."
+  [type-key attrmap]
+  (str "Creates a " (name type-key) ".\n"
+       "  Valid keys are "
+       (->> attrmap keys (map name) sort (str/join ", "))
+       "."))
 
 ;; Predicate factories for use in meta model definition
 
@@ -219,9 +226,9 @@
             :default-fn-var default-fn-var}]
     `(do (def ~hier-sym ~hierarchy)
          (def ^:metamodel ~sym ~mm)
-         ~@(for [[typekey attrmap] typemap]
-             `(def ~(symbol (name typekey)) (instance-factory ~sym ~typekey))))))
-
+         ~@(for [[typekey attrmap] typemap :let [fn-sym (symbol (name typekey))]]
+             `(do (def ~fn-sym (instance-factory ~sym ~typekey))
+                  (alter-meta! (var ~fn-sym) #(assoc % :doc ~(docstring typekey attrmap))))))))
 
 
 (defmacro defdefaults
@@ -234,5 +241,3 @@
        ~@(map (fn [[k forms]] `(defmethod ~sym ~k ~['spec 'tk 'ak]
                                  ~forms))
               default-mappings)))
-
-
