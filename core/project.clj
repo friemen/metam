@@ -5,6 +5,12 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]]
   :repl-options  {:port 9090}
+  :plugins [[codox "0.8.10"]]
+  :codox {:defaults {}
+          :sources ["src"]
+          :exclude []
+          :src-dir-uri "https://github.com/friemen/metam/blob/master/core"
+          :src-linenum-anchor-prefix "L"}
   :scm {:name "git"
         :url "https://github.com/friemen/metam/core"}
   :repositories [["clojars" {:url "https://clojars.org/repo"

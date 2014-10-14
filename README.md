@@ -4,11 +4,13 @@ A meta modeling facility for textual model representation with Clojure.
 
 [![Build Status](https://travis-ci.org/friemen/metam.png?branch=master)](https://travis-ci.org/friemen/metam)
 
+[![Clojars Project](http://clojars.org/metam/core/latest-version.svg)](http://clojars.org/metam/core)
+
+Include the dependency as shown above in your project.clj
+
+[API docs](https://friemen.github.com/metam)
+
 ## Usage
-
-Include in your project.clj the following dependency
-
-    [metam/core "1.0.7"]
 
 There are only a few API functions:
 
