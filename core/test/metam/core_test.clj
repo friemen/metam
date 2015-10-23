@@ -9,9 +9,11 @@
   (-> (make-hierarchy)
       (derive ::textfield ::widget)
       (derive ::button ::widget))
-  {::textfield    {:label [string?]
+  {::widget       {:disabled [boolean?]}
+   ::textfield    {:label [string?]
                    :password [(value-of true false)]}
-   ::button       {:text [string?]}
+   ::button       {:text [string?]
+                   :disabled []}
    ::panel        {:elements [required
                               (coll (type-of ::widget))
                               #(> (count %) 0)]}}
@@ -19,7 +21,8 @@
 
 (defdefaults defaults forms
   {:default nil
-   [::textfield :password] true})
+   [::textfield :password] true
+   [::widget :disabled]    false})
 
 
 (deftest valid-panel-test
@@ -36,13 +39,14 @@
 
 (deftest invalid-models-test
   (are [model] (thrown? IllegalArgumentException model)
-       (textfield "t1" :label "T" :password "")
-       (panel "p1")
-       (panel "p1" :children [])
-       (panel "p1" :elements [])
-       (panel "p1" :elements ["foo"])
-       (panel "p1" :elements
-                       [(button "b1" :text 1)])))
+    (textfield "t1" :label "T" :password "")
+    (textfield "t1" :label "T" :disabled "foo")
+    (panel "p1")
+    (panel "p1" :children [])
+    (panel "p1" :elements [])
+    (panel "p1" :elements ["foo"])
+    (panel "p1" :elements
+           [(button "b1" :text 1)])))
 
 
 (deftest defaults-test
@@ -60,8 +64,8 @@
                  [(button "b1" :text "B")
                   (textfield "t1" :label "T")])]
     (is (= '(panel "p1"
-                   :elements [(button "b1" :text "B")
-                              (textfield "t1" :label "T", :password true)])
+                   :elements [(button "b1" :text "B" :disabled false)
+                              (textfield "t1" :label "T" :disabled false :password true)])
            (pr-model p)))))
 
 
@@ -85,3 +89,15 @@
 (deftest docstring-test
   (let [docstring (-> (var textfield) meta :doc)]
     (is "Creates a textfield.\n  Valid keys are label, password.")))
+
+
+(deftest inheritance-test
+  (are [model data] (= data (dissoc model :metam.core/meta))
+    (textfield "t")
+    {:name "t", :disabled false, :password true}
+
+    (textfield "t" :disabled true)
+    {:name "t", :disabled true, :password true}
+
+    (button "b" :disabled "no")
+    {:name "b" :disabled "no"}))

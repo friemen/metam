@@ -6,3 +6,4 @@
 **/.lein-deps-sum
 **/.lein-failures
 /core/pom.xml.asc
+/core/.nrepl-port

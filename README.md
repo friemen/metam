@@ -38,8 +38,8 @@ do that easily by just using regular Clojure maps.
 
 Those maps would form an in-memory **model**.
 
-In fact I started creating models in Clojure by introducing 
-map-creating factory functions that I used in a nested fashion 
+In fact I started creating models in Clojure by introducing
+map-creating factory functions that I used in a nested fashion
 to provide the look as shown below:
 
 Here's the Clojure textual representation of a **UI panel** model:
@@ -62,7 +62,7 @@ Here's the Clojure textual representation of a **UI panel** model:
         (column "street" :getter-fn #(:street %) :setter-fn #(assoc % :street %2))
       ])
       (panel "actions" :lygeneral "ins 0" :lyhint "right, span" :components [
-        (button "delete" :action-fn delete)                                                                    
+        (button "delete" :action-fn delete)
         (button "ok" :action-fn ok)
         (button "cancel")
       ])
@@ -99,7 +99,7 @@ And a Clojure representation of a **service interface** would be something like 
                    :in-elements [(one "p" person)])]))
 ```
 
-To prevent me from creating useless models, a little bit of validation 
+To prevent me from creating useless models, a little bit of validation
 as part of these factory functions would be nice.
 And yes, it would be handy if model elements would be complemented
 with default values to use convention-over-configuration and make
@@ -108,7 +108,7 @@ textual models less noisy.
 If you'd build more than one of those simple DSLs yourself then you'll see
 a lot of repetition (factory functions, validation, defaults provision).
 **metam** simply factors these common things into a library with a
-defmetamodel macro. So the meta model for the service interface as shown
+`defmetamodel` macro. So the meta model for the service interface as shown
 above would look like this:
 
 ```clojure
@@ -116,28 +116,27 @@ above would look like this:
   (-> (make-hierarchy)
       (derive ::complextype ::datatype)
       (derive ::simpletype ::datatype))
-  
+
   {; a data structure
    ::complextype  {:elements [(coll (type-of ::e))]}
-   
+
    ; a primitive type (like string, number, date)
    ::simpletype   {}
-   
+
    ; an element of a complextype
    ::e            {:type [required (type-of ::datatype)]
                    :mult [(value-of :one :many)]}
 
-   ; a web service                         
+   ; a web service
    ::service      {:operations [(coll (type-of ::op))]}
-   
+
    ; a service operation
    ::op           {:in-elements [(coll (type-of ::e))]
                    :out-elements [(coll (type-of ::e))]}
-   }
-  #'no-defaults)
+   })
 
 
-;; Define shortcut functions
+;; Define additional shortcut functions as you like
 
 (defn one [name type]
   (e name :type type :mult :one))
@@ -145,6 +144,37 @@ above would look like this:
 (defn many [name type]
   (e name :type type :mult :many))
 ```
+
+## Inheritance
+
+Attributes defined for a parent meta type are available in all meta
+types deriving from the parent.
+
+I could, for example, add a `::datatype` to the `wsdl` metamodel above
+and expect all attributes attached to `::datatype` to be available in
+derived meta types `::complextype` and `::simpletype`:
+
+
+```clojure
+(defmetamodel wsdl
+  (-> (make-hierarchy)
+      (derive ::complextype ::datatype)
+      (derive ::simpletype ::datatype))
+  {::datatype     {:namespace [string?]}
+   ::complextype  {:elements [(coll (type-of ::e))]}
+   ::simpletype   {}
+   ;; ...
+   })
+```
+
+Now it would be perfectly valid to invoke
+
+```clojure
+(simpletype "mytype" :namespace "foo.bar")
+```
+
+since the hierarchy defined `::simpletype` as derived from `::datatype`.
+
 
 ## What the macro does
 
@@ -155,7 +185,8 @@ for validation.
 Each factory function validates input and provides default values (if
 a corresponding function var was given).
 
-An invocation of macroexpand-1 on a defmetamodel expression outputs:
+In essence, an invocation of macroexpand-1 on a defmetamodel
+expression outputs:
 
 ```clojure
 (do (def wsdl-hierarchy
@@ -198,13 +229,13 @@ supports default values:
 
 (defmetamodel forml
   (-> (make-hierarchy)
-      (derive ::panel ::component)
-      (derive ::panel ::growing)
-      (derive ::widget ::component)
+      (derive ::panel     ::component)
+      (derive ::panel     ::growing)
+      (derive ::widget    ::component)
       (derive ::textfield ::labeled)
       (derive ::textfield ::widget)
-      (derive ::label ::widget)
-      (derive ::button ::widget))
+      (derive ::label     ::widget)
+      (derive ::button    ::widget))
   {::panel       {:lygeneral [string?]
                   :lycolumns [string?]
                   :lyrows [string?]
@@ -236,9 +267,15 @@ default value. It is invoked for each attribute whose value is nil.
 The **defdefaults** macro is used here to make the actual mapping between
 the dispatch-value and the expression yielding the default value more concise.
 
+The multimethod generated by the macro makes use of the hierarchy the
+metamodel was defined with. For example, a default value assigned to
+`[::widget :lyhint]` will apply to all meta types derived from
+`::widget`, which means a missing `:lyhint` value is set to the empty
+string for `::button`, `::label` and `::textfield`.
+
 
 # License
 
-Copyright 2013,2014 F.Riemenschneider
+Copyright 2013-2015 F.Riemenschneider
 
 Distributed under the Eclipse Public License, the same as Clojure.

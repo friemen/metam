@@ -1,9 +1,9 @@
-(defproject metam/core "1.0.7"
+(defproject metam/core "1.1.0-SNAPSHOT"
   :description "A meta modeling facility for textual model representation."
   :url "https://github.com/friemen/metam"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.5.1"]]
+  :dependencies [[org.clojure/clojure "1.7.0"]]
   :repl-options  {:port 9090}
   :plugins [[codox "0.8.10"]]
   :codox {:defaults {}

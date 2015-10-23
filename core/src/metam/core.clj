@@ -42,6 +42,14 @@
    :default x))
 
 
+(defn- all-parents
+  "Returns transitive closure of all parents of type in hierarchy `h`
+  as a sequence of type keywords, or nil if no parents exist."
+  [h type-keyword]
+  (if-let [parent-types (parents h type-keyword)]
+    (concat parent-types (mapcat (partial all-parents h) parent-types))))
+
+
 (defn- check-value
   "Returns the vector [k v] if k is contained in (keys attrmap) and
   all constraint function invocations return true. Otherwise
@@ -91,18 +99,17 @@
   "Adds default values using the function default-fn to the model element x.
   A default-fn function must take three arguments:
   - the model element under construction as map
-  - the typekey that denotes the metatype
+  - the type-keyword that denotes the metatype
   - the attribute key"
   [default-fn-var me]
   (if-let [default-fn (get-default-fn default-fn-var)]
-    (let [typekey (->> me ::meta :type)
+    (let [type-keyword   (->> me ::meta :type)
           available-keys (->> me ::meta :constraints keys)
           update-missing (fn [k]
-                           [k (let [v (get me k)]
-                                (if (nil? v) (default-fn me typekey k) v))])]
+                           [k (get me k (default-fn me type-keyword k))])]
       (->> available-keys
            (map update-missing)
-           (filter second)
+           (filter (comp not-nil? second))
            (into me)))
     me))
 
@@ -126,13 +133,26 @@
     (and h mt (isa? h mt type-keyword))))
 
 
+(defn inherited-attributes
+  "Merges attribute maps to implement field inheritance for the type
+  specified by `type-keyword`.
+  Needs to be public to be available to code genererated by macro."
+  [{:keys [hierarchy types] :as meta-model} type-keyword]
+  (->> type-keyword
+       (all-parents hierarchy)
+       (cons type-keyword)
+       (reverse)
+       (map types)
+       (reduce merge)))
+
+
 (defn instance-factory
   "Returns a factory function that is used to create model elements of the
-  type described by typekey and attrmap."
-  [meta-model type-keyword]
+  type described by type-keyword and attrmap.
+  Needs to be public to be available to code genererated by macro."
+  [{:keys [hierarchy types default-fn-var] :as meta-model} type-keyword attrmap]
   (fn [id & keys-and-values]
-    (let [kv-pairs (partition 2 keys-and-values)
-          attrmap (-> meta-model :types type-keyword)]
+    (let [kv-pairs (partition 2 keys-and-values)]
       (check-required attrmap kv-pairs)
       (->> kv-pairs
            (map (partial check-value attrmap))
@@ -140,10 +160,12 @@
                           :type type-keyword
                           :constraints attrmap}
                   :name id})
-           (with-defaults (:default-fn-var meta-model))))))
+           (with-defaults default-fn-var)))))
+
 
 (defn docstring
-  "Returns the docstring for a model element factory function."
+  "Returns the docstring for a model element factory function.
+  Needs to be public to be available to code genererated by macro."
   [type-key attrmap]
   (str "Creates a " (name type-key) ".\n"
        "  Valid keys are "
@@ -153,22 +175,24 @@
 ;; Predicate factories for use in meta model definition
 
 (defn type-of
-  "Returns a predicate that checks if x is of the metatype specified by typekey."
+  "Returns a predicate that checks if x is of the metatype specified
+  by type-keyword."
   [type-keyword]
   (partial metatype? type-keyword))
 
 
 (defn value-of
-  "Returns a predicate that checks if a given value is contained in the set of keys."
+  "Returns a predicate that checks if a given value is contained in
+  the set of keys."
   [ & values]
   (let [vset (set values)]
     (fn [x]
       (contains? vset x))))
 
 (defn coll
-  "The single arity version returns a predicate that checks 
+  "The single arity version returns a predicate that checks
   if all x in xs comply to the predicate.
-  The 2-arity version returns a predicate that checks if all 
+  The 2-arity version returns a predicate that checks if all
   keys and all values comply to key-pred and val-pred, respectively."
   ([pred]
      (fn [xs]
@@ -200,14 +224,14 @@
      (if-let [mt (metatype me)]
        (conj s (-> me :name) (symbol (name mt)))
        s))
-   
+
    (map? me)
    (into {} (for [[k v] me]
               [k (pr-model v)]))
-   
+
    (coll? me)
    (vec (map pr-model me))
-   
+
    :else me))
 
 
@@ -219,25 +243,30 @@
    - The sym-hierarchy var contains the type hierarchy.
    - The sym-metamodel var contains a map with keys/values :hierarchy and :types.
    - For each type a factory function that creates and checks a model element for that type."
-  [sym hierarchy typemap default-fn-var]
-  (let [hier-sym (symbol (str sym "-hierarchy"))
-        mm {:hierarchy hier-sym
-            :types typemap
-            :default-fn-var default-fn-var}]
-    `(do (def ~hier-sym ~hierarchy)
-         (def ^:metamodel ~sym ~mm)
-         ~@(for [[typekey attrmap] typemap :let [fn-sym (symbol (name typekey))]]
-             `(do (def ~fn-sym (instance-factory ~sym ~typekey))
-                  (alter-meta! (var ~fn-sym) #(assoc % :doc ~(docstring typekey attrmap))))))))
+  ([sym hierarchy typemap]
+   `(defmetamodel ~sym ~hierarchy ~typemap nil))
+
+  ([sym hierarchy typemap default-fn-var]
+   (let [hier-sym (symbol (str sym "-hierarchy"))
+         mm {:hierarchy hier-sym
+             :types typemap
+             :default-fn-var default-fn-var}]
+     `(do (def ~hier-sym ~hierarchy)
+          (def ^:metamodel ~sym ~mm)
+          ~@(for [type-keyword (keys typemap) :let [fn-sym (-> type-keyword name symbol)]]
+              `(let [attrmap# (inherited-attributes ~sym ~type-keyword)]
+                 (def ~fn-sym (instance-factory ~sym ~type-keyword attrmap#))
+                 (alter-meta! (var ~fn-sym) assoc :doc (docstring ~type-keyword attrmap#))))))))
 
 
 (defmacro defdefaults
-  "Creates a multimethod for the metamodel that provides defaults from the given map."
+  "Creates a multimethod for the metamodel that provides defaults from
+  the given map."
   [sym metamodel default-mappings]
   `(do (defmulti ~sym
          (fn ~['spec 'type-keyword 'attr-keyword]
            (vector ~'type-keyword ~'attr-keyword))
          :hierarchy (var ~(symbol (str metamodel "-hierarchy"))))
-       ~@(map (fn [[k forms]] `(defmethod ~sym ~k ~['spec 'tk 'ak]
-                                 ~forms))
-              default-mappings)))
+       ~@(for [[k forms] default-mappings]
+           `(defmethod ~sym ~k ~['spec 'tk 'ak]
+              ~forms))))
