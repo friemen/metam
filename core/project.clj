@@ -1,4 +1,4 @@
-(defproject metam/core "1.1.0-SNAPSHOT"
+(defproject metam/core "1.1.0"
   :description "A meta modeling facility for textual model representation."
   :url "https://github.com/friemen/metam"
   :license {:name "Eclipse Public License"
