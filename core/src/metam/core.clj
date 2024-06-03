@@ -205,11 +205,6 @@
             (every? key-pred (keys m))
             (every? val-pred (vals m))))))
 
-(defn boolean?
-  "Predicate to check if a value is either true or false."
-  [x]
-  (or (= x true) (= x false)))
-
 
 ;; Main API
 

@@ -78,14 +78,6 @@
   (is (not ((coll string? number?) {"foo" 42 "bar" "4711"}))))
 
 
-(deftest boolean?-test
-  (are [r x] (= r (boolean? x))
-       false nil
-       true false
-       true true
-       false "foo"))
-
-
 (deftest docstring-test
   (let [docstring (-> (var textfield) meta :doc)]
     (is "Creates a textfield.\n  Valid keys are label, password.")))

@@ -1,8 +1,8 @@
 (ns samples.statemachine.model
-  (require [clojure.java.io :as io]
-           [samples.statemachine.metamodel :refer :all]
-           [samples.statemachine.diagram :refer [generate-png]]
-           [metam.core :refer [pr-model]]))
+  (:require [clojure.java.io :as io]
+            [samples.statemachine.metamodel :refer :all]
+            [samples.statemachine.diagram :refer [generate-png]]
+            [metam.core :refer [pr-model]]))
 
 (defn unlock-door [state] state)
 (defn lock-door [state] state)
@@ -72,14 +72,14 @@
 (add-watch #'secret-compartment3
            :diagram
            (fn [k r o n]
-             (generate-png n (io/file "/home/riemensc/test.png"))))
+             (generate-png n (io/file "/tmp/test.png"))))
 
 
 (def secret-compartment4 (statemachine-parser "
 events
   doorClosed
   drawerOpened
-  lightOn   
+  lightOn
   reset doorOpened
   panelClosed
 end
