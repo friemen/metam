@@ -4,11 +4,11 @@ A meta modeling facility for textual model representation with Clojure.
 
 [![Build Status](https://travis-ci.org/friemen/metam.png?branch=master)](https://travis-ci.org/friemen/metam)
 
-[![Clojars Project](http://clojars.org/metam/core/latest-version.svg)](http://clojars.org/metam/core)
+[![Clojars Project](https://clojars.org/metam/core/latest-version.svg)](https://clojars.org/metam/core)
 
 Include the dependency as shown above in your project.clj
 
-[API docs](https://friemen.github.com/metam)
+[API docs](https://friemen.github.io/metam)
 
 ## Usage
 
@@ -276,6 +276,6 @@ string for `::button`, `::label` and `::textfield`.
 
 # License
 
-Copyright 2013-2015 F.Riemenschneider
+Copyright 2013-2025 F.Riemenschneider
 
 Distributed under the Eclipse Public License, the same as Clojure.
