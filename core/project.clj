@@ -10,7 +10,7 @@
    :url "http://www.eclipse.org/legal/epl-v10.html"}
 
   :dependencies
-  [[org.clojure/clojure "1.12.1"]]
+  [[org.clojure/clojure "1.12.4"]]
 
   :plugins
   [[lein-codox "0.10.8"]]
@@ -26,5 +26,6 @@
    :url "https://github.com/friemen/metam/core"}
 
   :repositories
-  [["clojars" {:url "https://clojars.org/repo"
-               :creds :gpg}]])
+  [["clojars"
+    {:url "https://clojars.org/repo"
+     :creds :gpg}]])
